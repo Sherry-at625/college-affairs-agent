@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1a5276">
+<meta name="description" content="学院事务咨询助手：依据 5 份现行制度文件，回答补考、缓考、重修、成绩复核、奖助学金、宿舍与教室报修问题，每条回答带文件名与条款号。">
+<title>学院事务咨询助手</title>
+<style>
+  :root{
+    --bg:#f2f5f7; --card:#ffffff; --ink:#16232e; --ink-2:#4a5b6a; --ink-3:#7d8b98;
+    --line:#e2e8ee; --primary:#1a5276; --primary-soft:#e8f0f5; --primary-deep:#123c56;
+    --teal:#0e7c66; --teal-soft:#e6f4f0; --amber:#a8641b; --amber-soft:#fdf3e3;
+    --red:#a3352c; --red-soft:#fdeeec;
+    --radius:14px;
+    --shadow:0 1px 2px rgba(18,40,60,.05), 0 8px 24px rgba(18,40,60,.06);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Segoe UI",Roboto,sans-serif;
+    font-size:16px; line-height:1.65;
+    padding:0 0 env(safe-area-inset-bottom);
+  }
+  .wrap{max-width:720px;margin:0 auto;padding:0 14px}
+
+  /* ---------- 顶部 ---------- */
+  header{
+    background:linear-gradient(160deg,#1a5276 0%,#123c56 100%);
+    color:#fff; padding:22px 0 20px; border-radius:0 0 20px 20px;
+    box-shadow:0 8px 22px rgba(18,60,86,.18);
+  }
+  .brand{display:flex;align-items:center;gap:10px}
+  .mark{
+    width:38px;height:38px;border-radius:11px;background:rgba(255,255,255,.16);
+    display:flex;align-items:center;justify-content:center;font-size:19px;flex:0 0 auto;
+    border:1px solid rgba(255,255,255,.24)
+  }
+  h1{font-size:20px;margin:0;font-weight:700;letter-spacing:.3px}
+  .tagline{color:rgba(255,255,255,.86);font-size:13.5px;margin:8px 0 0;line-height:1.55}
+  .badges{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+  .badge{
+    font-size:11.5px;padding:3px 9px;border-radius:20px;
+    background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);color:#eaf3f8
+  }
+
+  /* ---------- 提问区 ---------- */
+  .ask{margin-top:14px;background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:12px}
+  .chips{display:flex;gap:7px;overflow-x:auto;padding:2px 2px 10px;scrollbar-width:none}
+  .chips::-webkit-scrollbar{display:none}
+  .chip{
+    flex:0 0 auto;font-size:13px;color:var(--primary);background:var(--primary-soft);
+    border:1px solid #d3e2ec;border-radius:18px;padding:6px 12px;cursor:pointer;white-space:nowrap;
+    transition:.15s
+  }
+  .chip:active{transform:scale(.97);background:#dceaf3}
+  .inputbar{display:flex;gap:8px;align-items:flex-end}
+  textarea{
+    flex:1;min-height:46px;max-height:120px;resize:none;border:1px solid var(--line);
+    border-radius:12px;padding:11px 12px;font-size:15.5px;line-height:1.5;font-family:inherit;
+    color:var(--ink);background:#fbfcfd;outline:none;transition:.15s
+  }
+  textarea:focus{border-color:#9dc0d4;background:#fff;box-shadow:0 0 0 3px rgba(26,82,118,.08)}
+  button.send{
+    flex:0 0 auto;height:46px;padding:0 18px;border-radius:12px;border:0;cursor:pointer;
+    background:var(--primary);color:#fff;font-size:15px;font-weight:600;font-family:inherit;
+    transition:.15s
+  }
+  button.send:active{background:var(--primary-deep);transform:scale(.98)}
+  button.send[disabled]{opacity:.5;cursor:default}
+  .hint{font-size:11.5px;color:var(--ink-3);margin:8px 2px 0;line-height:1.5}
+
+  /* ---------- 对话流 ---------- */
+  #log{margin-top:14px;display:flex;flex-direction:column;gap:12px}
+  .turn{animation:rise .28s ease both}
+  @keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .me{
+    align-self:flex-end;max-width:86%;background:var(--primary);color:#fff;
+    padding:9px 13px;border-radius:14px 14px 4px 14px;font-size:15px;word-break:break-word
+  }
+  .bot{
+    background:var(--card);border-radius:4px 14px 14px 14px;box-shadow:var(--shadow);
+    padding:0;overflow:hidden
+  }
+  .bot-head{
+    display:flex;align-items:center;gap:7px;padding:10px 13px 8px;border-bottom:1px solid var(--line);
+    font-size:12px;color:var(--ink-3);background:#fafcfd
+  }
+  .dot{width:6px;height:6px;border-radius:50%;background:var(--teal)}
+  .dot.warn{background:var(--amber)}
+  .dot.risk{background:var(--red)}
+  .sec{padding:12px 13px}
+  .sec + .sec{border-top:1px dashed var(--line)}
+  .sec-title{
+    display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;
+    letter-spacing:.6px;padding:2px 8px;border-radius:6px;margin-bottom:7px
+  }
+  .t1{background:var(--primary-soft);color:var(--primary-deep)}
+  .t2{background:var(--teal-soft);color:var(--teal)}
+  .t3{background:var(--amber-soft);color:var(--amber)}
+  .concl{font-size:16.5px;font-weight:600;line-height:1.6;color:var(--ink);margin:0}
+  .src{
+    margin-top:8px;font-size:12.5px;color:var(--ink-2);
+    background:#f7f9fb;border-left:3px solid #c9d6e0;border-radius:0 8px 8px 0;padding:8px 10px
+  }
+  .src b{color:var(--primary-deep)}
+  .src .quote{color:var(--ink-2);font-size:12.5px;line-height:1.6;margin-top:3px}
+  .src + .src{margin-top:7px}
+  .steps{margin:0;padding-left:18px;font-size:14.5px;color:var(--ink-2)}
+  .steps li{margin:2px 0}
+  .fallback{background:var(--amber-soft);border-radius:10px;padding:11px 12px}
+  .fallback .concl{font-size:15px}
+  .transfer{margin-top:8px;font-size:13.5px;color:var(--amber);font-weight:600}
+  details.more{margin:0 13px 12px;border-top:1px solid var(--line);padding-top:10px}
+  details.more summary{
+    font-size:12px;color:var(--ink-3);cursor:pointer;list-style:none;display:flex;align-items:center;gap:5px
+  }
+  details.more summary::-webkit-details-marker{display:none}
+  details.more summary::before{content:"▸";font-size:10px;transition:.2s}
+  details.more[open] summary::before{transform:rotate(90deg)}
+  .rank{font-size:12px;color:var(--ink-2);margin-top:8px}
+  .rank-row{display:flex;gap:8px;padding:5px 0;border-bottom:1px dashed #eef2f6}
+  .rank-row:last-child{border:0}
+  .rank-n{flex:0 0 16px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+  .rank-body{flex:1;min-width:0}
+  .rank-body b{font-weight:600;color:var(--ink)}
+  .rank-score{flex:0 0 auto;color:var(--ink-3);font-variant-numeric:tabular-nums}
+
+  /* ---------- 页脚 ---------- */
+  footer{margin:24px 0 30px;font-size:12px;color:var(--ink-3);line-height:1.7}
+  footer .fline{padding:10px 12px;background:#eaf0f4;border-radius:10px}
+  footer b{color:var(--ink-2)}
+  .nojs{background:var(--red-soft);color:var(--red);padding:12px;border-radius:10px;font-size:14px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="brand">
+      <div class="mark">🎓</div>
+      <h1>学院事务咨询助手</h1>
+    </div>
+    <p class="tagline">只依据 5 份现行制度文件作答 —— 补考、缓考、重修、成绩复核、奖助学金、宿舍与教室报修，每条回答给出文件名与条款号。</p>
+    <div class="badges">
+      <span class="badge">依据 5 份现行文件</span>
+      <span class="badge">旧版已归档</span>
+      <span class="badge">语料 0 处个人信息</span>
+      <span class="badge">答不出就说"未收录"</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="ask">
+    <div class="chips" id="chips">
+      <button class="chip" type="button">补考申请要在多久内提交？</button>
+      <button class="chip" type="button">缓考要交什么材料？</button>
+      <button class="chip" type="button">重修要交学费吗？最多几次？</button>
+      <button class="chip" type="button">对成绩有异议怎么复核？</button>
+      <button class="chip" type="button">国家奖学金多少钱？要什么条件？</button>
+      <button class="chip" type="button">宿舍漏水了怎么报修？</button>
+      <button class="chip" type="button">教室投影打不开了找谁？</button>
+      <button class="chip" type="button">交换生的学分怎么认定？</button>
+      <button class="chip" type="button">我睡不着，吃什么药好？</button>
+    </div>
+    <div class="inputbar">
+      <textarea id="q" rows="1" placeholder="用大白话问就行，例如：补考没过还能再补一次吗？" autocomplete="off"></textarea>
+      <button class="send" id="send" type="button">提问</button>
+    </div>
+    <p class="hint">按 Enter 发送 · Shift+Enter 换行。涉及金额个案、处分、政策例外会转人工，不代算结论。</p>
+  </section>
+
+  <div id="log"></div>
+
+  <footer>
+    <div class="fline">
+      <b>资料以文件生效日期为准。</b><br>
+      教学管理制度 2024 版（2024-09-01）· 奖助学金办法 2025 版（2025-03-01）· 宿舍报修管理办法 2024 版（2024-09-01）· 教室多媒体报修流程 2024 版（2024-09-01）· 教务 FAQ 2025-09（2025-09-10，仅通俗解释，冲突以正式文件为准）。<br>
+      教室多媒体报修流程 2023 版已废止，不在检索范围。
+    </div>
+  </footer>
+</main>
+
+<script src="kb.data.js"></script>
+<script src="engine.js"></script>
+<script>
+(function () {
+  var KB = window.KB_DATA || null;
+  var logEl = document.getElementById('log');
+  var qEl = document.getElementById('q');
+  var sendBtn = document.getElementById('send');
+  var ready = false;
+
+  // http(s) 下优先读 kb.json；file:// 下直接用 kb.data.js（避免 fetch 被 CORS 拦截）
+  function boot() {
+    if (location.protocol === 'file:') { ready = !!KB; return afterBoot(); }
+    fetch('kb.json', { cache: 'no-cache' })
+      .then(function (r) { if (!r.ok) throw 0; return r.json(); })
+      .then(function (j) { KB = j; ready = true; afterBoot(); })
+      .catch(function () { ready = !!KB; afterBoot(); });
+  }
+
+  function afterBoot() {
+    if (!ready) {
+      logEl.innerHTML = '<div class="nojs">知识库加载失败，请确认 kb.json 与 kb.data.js 与本页面在同一目录。</div>';
+      sendBtn.disabled = true;
+      return;
+    }
+    sendBtn.disabled = false;
+  }
+
+  function esc(s) {
+    return String(s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+
+  function splitSteps(text) {
+    return String(text)
+      .replace(/([；。])(?=[^」』]|$)/g, '$1|')
+      .split('|')
+      .map(function (s) { return s.trim(); })
+      .filter(Boolean);
+  }
+
+  function render(res, question) {
+    var me = document.createElement('div');
+    me.className = 'turn me';
+    me.textContent = question;
+    logEl.appendChild(me);
+
+    var t = document.createElement('div');
+    t.className = 'turn bot';
+
+    var dotClass = res.type === 'guard' ? 'risk' : (res.type === 'fallback' ? 'warn' : '');
+    var head = '<div class="bot-head"><span class="dot ' + dotClass + '"></span>' +
+      '<span>' + esc(res.typeLabel) + '</span>' +
+      (res.intent ? '<span style="margin-left:auto;color:#9aa8b4">' + esc(res.intent) + '</span>' : '') +
+      '</div>';
+
+    var isFallback = res.type === 'fallback' || res.type === 'guard';
+    var body = '';
+
+    // 【结论】
+    body += '<div class="sec' + (isFallback ? ' fallback' : '') + '">' +
+      '<div class="sec-title t1">结论</div>' +
+      '<p class="concl">' + esc(res.conclusion) + '</p>';
+
+    if (isFallback) {
+      body += '<div class="transfer">转人工：学院学生工作办公室 0411-0000-0005 · 教务处 0411-0000-0003</div>';
+    }
+    body += '</div>';
+
+    // 【依据】
+    body += '<div class="sec"><div class="sec-title t2">依据</div>';
+    if (!res.evidence.length) {
+      body += '<div class="src">无可用依据。</div>';
+    } else {
+      res.evidence.forEach(function (e) {
+        body += '<div class="src">' +
+          '<b>《' + esc(e.doc) + '》' + esc(e.clause) + '</b>' +
+          '<div class="quote">' + esc(e.text) + '</div>' +
+          '</div>';
+      });
+    }
+    body += '</div>';
+
+    // 【下一步】
+    body += '<div class="sec"><div class="sec-title t3">下一步</div><ul class="steps">';
+    splitSteps(res.next).forEach(function (s) { body += '<li>' + esc(s.replace(/[；。]$/, '')) + '</li>'; });
+    body += '</ul></div>';
+
+    // 出处可核对（本条依据前 3 条）
+    if (res.top3 && res.top3.length) {
+      body += '<details class="more"><summary>查看本条依据（前 3 条，可回原文核对）</summary><div class="rank">';
+      res.top3.forEach(function (c, i) {
+        body += '<div class="rank-row"><div class="rank-n">' + (i + 1) + '</div>' +
+          '<div class="rank-body"><b>《' + esc(c.docShort || c.doc) + '》' + esc(c.clause) + '</b></div>' +
+          '<div class="rank-score">' + (c.score > 0 ? c.score.toFixed(1) : '条款映射') + '</div></div>';
+      });
+      body += '</div></details>';
+    }
+
+    t.innerHTML = head + body;
+    logEl.appendChild(t);
+    t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function ask(text) {
+    var q = (text != null ? text : qEl.value).trim();
+    if (!q) { qEl.focus(); return; }
+    if (!ready) return;
+    var res = window.AgentEngine.answer(q, KB);
+    render(res, q);
+    qEl.value = '';
+    qEl.style.height = 'auto';
+  }
+
+  sendBtn.addEventListener('click', function () { ask(); });
+  qEl.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); ask(); }
+  });
+  qEl.addEventListener('input', function () {
+    qEl.style.height = 'auto';
+    qEl.style.height = Math.min(qEl.scrollHeight, 120) + 'px';
+  });
+  document.getElementById('chips').addEventListener('click', function (e) {
+    if (e.target.classList.contains('chip')) ask(e.target.textContent);
+  });
+
+  boot();
+})();
+</script>
+</body>
+</html>
